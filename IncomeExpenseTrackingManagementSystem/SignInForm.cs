@@ -14,23 +14,13 @@ namespace IncomeExpenseTrackingManagementSystem
     public partial class SignInForm : Form
     {
         //1.For database connection at first we create object of SqlConnection Class and we pass connetion string to constructor of the calss , here we pass databse name , databse server name
-        SqlConnection con = new SqlConnection("");
+        DatabaseHelper db = new DatabaseHelper();
         public SignInForm()
         {
             InitializeComponent();
         }
 
-        public bool checkConnection()
-        {
-            if (con.State == ConnectionState.Closed)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        
         private void label4_Click(object sender, EventArgs e)
         {
 
@@ -71,5 +61,36 @@ namespace IncomeExpenseTrackingManagementSystem
 
 
         }
+
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            string username = txtSingInUserName.Text.Trim();
+            string password = txtSignInPassword.Text.Trim();
+
+            if (username == "" || password == "")
+            {
+                MessageBox.Show("Please enter both username and password.");
+                return;
+            }
+
+            string query = $"SELECT * FROM Users WHERE Username='{username}' AND Password='{password}'";
+            var dt = db.GetDataTable(query);
+
+            if (dt.Rows.Count > 0)
+            {
+                MessageBox.Show("Login successful!");
+
+                FromDashboard dashboard = new FromDashboard();
+                dashboard.Show();
+                this.Hide(); // hide login form
+                // You can open another form here
+                // Example: new DashboardForm().Show(); this.Hide();
+            }
+            else
+            {
+                MessageBox.Show("Invalid username or password.");
+            }
+        }
+    
     }
 }

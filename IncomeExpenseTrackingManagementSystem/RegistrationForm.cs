@@ -13,6 +13,7 @@ namespace IncomeExpenseTrackingManagementSystem
 {
     public partial class RegistrationForm : Form
     {
+        DatabaseHelper db = new DatabaseHelper();
         public RegistrationForm()
         {
             InitializeComponent();
@@ -53,14 +54,57 @@ namespace IncomeExpenseTrackingManagementSystem
 
         private void btnSingup_Click(object sender, EventArgs e)
         {
-            //Text is the property of text box and we check if text box is empty then show a message 
-            if(txtRegistrationUserName.Text == "" || txtRegistrationPassword.Text == "" || textRegistrationComfirmPassword.Text == "")
+
+
+            string username = txtRegistrationUserName.Text.Trim();
+            string password = txtRegistrationPassword.Text.Trim();
+
+            if (username == "" || password == "")
             {
-                MessageBox.Show("Please fill all the blank fileds", "Error Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please enter both username and password.");
+                return;
+            }
+
+            // Check if user already exists
+            string checkQuery = $"SELECT * FROM Users WHERE Username='{username}'";
+            var dt = db.GetDataTable(checkQuery);
+            if (dt.Rows.Count > 0)
+            {
+                MessageBox.Show("Username already exists! Please choose another.");
+                return;
+            }
+
+            // Insert new user
+            string insertQuery = $"INSERT INTO Users (Username, Password) VALUES ('{username}', '{password}')";
+            bool success = db.InsertUpdateDelete(insertQuery);
+
+            if (success)
+            {
+                // Verify insertion
+                string verifyQuery = $"SELECT * FROM Users WHERE Username='{username}'";
+                var dtVerify = db.GetDataTable(verifyQuery);
+
+                if (dtVerify.Rows.Count > 0)
+                {
+                    MessageBox.Show("Registration successful and verified in database!");
+                    
+                    SignInForm singIn = new SignInForm();
+                    singIn.Show();
+                    this.Hide();
+
+                    // Optionally, open login form
+                    // LoginForm loginForm = new LoginForm();
+                    // loginForm.Show();
+                    // this.Hide();
+                }
+                else
+                {
+                    MessageBox.Show("Registration failed: data not stored in database.");
+                }
             }
             else
             {
-
+                MessageBox.Show("Registration failed. Try again.");
             }
         }
     }
